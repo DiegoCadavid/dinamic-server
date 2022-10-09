@@ -230,6 +230,29 @@ class DinamicRoute {
     };
   }
 
+  validateIdMongoParams() {
+    const Model = this.Model;
+    const nameDinamicRoute = this.nameDinamicRoute;
+    return async (req, res, next) => {
+      const { id = "" } = req.params;
+      const regexMongoId = /^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i;
+      if (!regexMongoId.test(id)) {
+        return res.status(400).json({
+          msg: "Id invalido",
+        });
+      }
+      const model = await Model.findById(id);
+
+      if (!model) {
+        return res.status(400).json({
+          msg: `No existe un ${nameDinamicRoute} con ese ID`,
+        });
+      }
+
+      next();
+    };
+  }
+
   createRoutes() {
     // CRUD
     // CREATE
@@ -318,26 +341,23 @@ class DinamicRoute {
     });
 
     // GET BY ID
-    this.dinamicRoute.get("/:id", async (req, res) => {
-      try {
-        const { id } = req.params;
+    this.dinamicRoute.get(
+      "/:id",
+      [this.validateIdMongoParams()],
+      async (req, res) => {
+        try {
+          const { id } = req.params;
+          const model = await this.Model.findById(id);
 
-        const model = await this.Model.findById(id);
-
-        if (!model) {
-          return res.status(400).json({
-            msg: `No existe un ${this.nameDinamicRoute} con ese ID`,
+          res.status(200).json(model);
+        } catch (error) {
+          console.log(`${error}`.red);
+          res.status(500).json({
+            msg: "SERVER ERROR",
           });
         }
-
-        res.status(200).json(model);
-      } catch (error) {
-        console.log(`${error}`.red);
-        res.status(500).json({
-          msg: "SERVER ERROR",
-        });
       }
-    });
+    );
 
     // UPDATE
     this.dinamicRoute.put(
@@ -396,35 +416,14 @@ class DinamicRoute {
     );
 
     // REMOVE BY ID
-    this.dinamicRoute.delete("/:id", async (req, res) => {
+    this.dinamicRoute.delete("/:id",[this.validateIdMongoParams], async (req, res) => {
       try {
         const { id } = req.params;
 
-        const model = await this.Model.findById(id);
-
-        if (!model) {
-          return res.status(400).json({
-            msg: `No existe un ${this.nameDinamicRoute} con ese ID`,
-          });
-        }
-
         await this.Model.findByIdAndDelete(id);
-        res.status(200).json(model);
-      } catch (error) {
-        console.log(`${error}`.red);
-        res.status(500).json({
-          msg: "SERVER ERROR",
-        });
-      }
-    });
-
-    // INFO ROUTE
-    this.dinamicRoute.get("/info", (req, res) => {
-      try {
         res.status(200).json({
-          name: this.nameDinamicRoute,
-          schema: this.schemaObj
-        })
+          msg: "Usuario removido",
+        });
       } catch (error) {
         console.log(`${error}`.red);
         res.status(500).json({
