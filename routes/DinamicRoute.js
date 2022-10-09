@@ -431,6 +431,13 @@ class DinamicRoute {
         });
       }
     });
+
+    // VIEW INFO 
+    this.dinamicRoute.post('/route', (req, res  ) =>{
+      res.status(200).json({
+        schema: this.schemaObj
+      })
+    })
   }
 
   init() {
