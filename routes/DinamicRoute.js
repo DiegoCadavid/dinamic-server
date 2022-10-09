@@ -417,6 +417,21 @@ class DinamicRoute {
         });
       }
     });
+
+    // INFO ROUTE
+    this.dinamicRoute.get("/info", (req, res) => {
+      try {
+        res.status(200).json({
+          name: this.nameDinamicRoute,
+          schema: this.schemaObj
+        })
+      } catch (error) {
+        console.log(`${error}`.red);
+        res.status(500).json({
+          msg: "SERVER ERROR",
+        });
+      }
+    });
   }
 
   init() {
