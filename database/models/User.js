@@ -8,7 +8,7 @@ const userSchema = new Schema({
     unique: true,
     match: [/^\w+@\w+(\.\w+)+$/gi, "El correo es invalido"],
   },
-  age: { type: Schema.Types.Number, min: 18, max: 99, default: 16 },
+  age: { type: Schema.Types.Number, min: 18, max: 99, default: 22 },
   rol: { type: Schema.Types.String, default: "user" },
 });
 

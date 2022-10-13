@@ -6,6 +6,7 @@ const parseSchema = require("../helpers/parseSchema");
  * Crea una CRUD con sus respectivas rutas y validacioens a base de un Modelo
  */
 class DinamicRoute {
+
   constructor(name = "", model = mongoose.Model) {
     // Creamos la ruta
     this.dinamicRoute = express.Router();
@@ -306,8 +307,9 @@ class DinamicRoute {
       try {
         const perPage = Math.abs(Number(req.query?.perPage) || 10);
         const page = Math.abs(Number(req.query?.page) || 1);
+        const q = req.query?.q || "";
 
-        const modelList = await this.Model.find();
+        const modelList = await this.Model.find({ [this.schemaObj[0].name] : new RegExp(q, "gi") });
         const modelListPage = modelList
           .filter((modelItem, index) => {
             if (index + 1 < perPage * (page - 1)) {
@@ -326,7 +328,7 @@ class DinamicRoute {
 
         const pagesCount = Math.ceil(modelList.length / perPage);
 
-        res.status(400).json({
+        res.status(200).json({
           perPage,
           page,
           pagesCount,
@@ -416,28 +418,53 @@ class DinamicRoute {
     );
 
     // REMOVE BY ID
-    this.dinamicRoute.delete("/:id",[this.validateIdMongoParams], async (req, res) => {
-      try {
-        const { id } = req.params;
+    this.dinamicRoute.delete(
+      "/:id",
+      [this.validateIdMongoParams()],
+      async (req, res) => {
+        try {
+          const { id } = req.params;
 
-        await this.Model.findByIdAndDelete(id);
-        res.status(200).json({
-          msg: "Usuario removido",
-        });
-      } catch (error) {
-        console.log(`${error}`.red);
-        res.status(500).json({
-          msg: "SERVER ERROR",
-        });
+          await this.Model.findByIdAndDelete(id);
+          res.status(200).json({
+            msg: "Usuario removido",
+          });
+        } catch (error) {
+          console.log(`${error}`.red);
+          res.status(500).json({
+            msg: "SERVER ERROR",
+          });
+        }
       }
-    });
+    );
 
-    // VIEW INFO 
-    this.dinamicRoute.post('/route', (req, res  ) =>{
+    // VIEW INFO
+    this.dinamicRoute.post("/route", (req, res) => {
+      const formatSchema = this.schemaObj.map((element) => {
+        const formatValidations = element.validators.map((v) => {
+          if (v.name == "regexp") {
+            return {
+              name: v.name,
+              value: { source: v.value.source, flags: v.value.flags },
+            };
+          }
+
+          return v;
+        });
+
+
+        return {
+          name: element.name,
+          type: element.type,
+          validators: formatValidations,
+          isUnique: element.isUnique
+        };
+      });
+
       res.status(200).json({
-        schema: this.schemaObj
-      })
-    })
+        schema: formatSchema,
+      });
+    });
   }
 
   init() {
