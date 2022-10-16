@@ -1,7 +1,7 @@
 const { Schema, model } = require("mongoose");
 
 const userSchema = new Schema({
-  name: { type: Schema.Types.String, required: true },
+  name: { type: Schema.Types.String, required: true, minLength: 10, maxLength: 20 },
   email: {
     type: Schema.Types.String,
     required: true,

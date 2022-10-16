@@ -141,6 +141,26 @@ class DinamicRoute {
                 }
               }
 
+              // En caso de validar un minLength 
+              if(itemValidate.name == "minlength"){
+                if( bodyItemValue.length < itemValidate.value ){
+                  validationsErrors.push({
+                    name: bodyItemName,
+                    msg: `${bodyItemName} debe tener mas de ${ itemValidate.value } letras`
+                  })
+                }
+              }
+
+              // En caso de validar un maxLength 
+              if(itemValidate.name == "maxlength"){
+                if( bodyItemValue.length > itemValidate.value ){
+                  validationsErrors.push({
+                    name: bodyItemName,
+                    msg: `${bodyItemName} debe tener menos de ${ itemValidate.value } letras`
+                  })
+                }
+              }
+
               // En caso de validar un min
               if (itemValidate.name == "min") {
                 if (itemValidate.value === true) {
