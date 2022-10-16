@@ -103,6 +103,11 @@ class DinamicRoute {
    * MIDDLEWARE | Realizamos las validaciones del schema
    */
   validateSchemaValues() {
+
+    // String -> minLength, maxLength, match
+    // Number -> min, max
+    // Date -> min, max, expires
+
     const schemaObj = this.schemaObj;
 
     return (req, res, next) => {
